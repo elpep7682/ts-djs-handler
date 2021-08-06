@@ -7,7 +7,7 @@ exports.event = {
     emiter: "on",
     run: (client) => {
         var cmds = client.commands.size;
-        var dac = "comandos", text = cmds === 0 ? dac.replace("s", "") : dac;
+        var dac = "comandos", text = cmds >= 0 ? dac.replace("s", "") : dac;
         process.stdout.clearLine(1);
         process.stdout.cursorTo(0);
         console.log(colors_1.bold.red("+ ") +
