@@ -3,8 +3,8 @@ export const command: Command = {
   name: "ping",
   aliases: ["test"],
   run: async (_client, message) => {
-    const latency = Date.now() - message.createdTimestamp;
-    message.channel.send({
+    const latency = Math.floor(message.createdTimestamp - Date.now());
+    message.reply({
       content:
         `Pong!\nEnviado en \`` +
         latency + // Milisegundos
