@@ -6,7 +6,7 @@ export const event: Event = {
   run: (client) => {
     var cmds: number = client.commands.size;
     var dac: string = "comandos",
-      text: string = cmds === 0 ? dac.replace("s", "") : dac;
+      text: string = cmds >= 0 ? dac.replace("s", "") : dac;
 
     process.stdout.clearLine(1);
     process.stdout.cursorTo(0);
