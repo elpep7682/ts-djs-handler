@@ -4,29 +4,27 @@ const tslib_1 = require("tslib");
 const discord_js_1 = require("discord.js");
 const path_1 = tslib_1.__importDefault(require("path"));
 const fs_1 = require("fs");
-const config_json_1 = tslib_1.__importDefault(require("../config.json"));
+const config_json_1 = require("../config.json");
 const dotenv_1 = require("dotenv");
 dotenv_1.config();
-class Extendedclient extends discord_js_1.Client {
+class TSClient extends discord_js_1.Client {
     commands = new discord_js_1.Collection();
     events = new discord_js_1.Collection();
-    config = config_json_1.default;
+    config = { token: config_json_1.token, prefix: config_json_1.prefix };
     aliases = new discord_js_1.Collection();
-    async init({ options: { error, clear } }) {
+    async start({ options: { error, clear }, }) {
         process.stdout.write("Iniciando...");
-        this.login(process.env.DISCORD_TOKEN).then(() => {
+        this.login(process.env[config_json_1.token]).then(() => {
             process.stdout.clearLine(1);
             process.stdout.cursorTo(0);
             process.stdout.write("Bot conectandose...");
         });
-        if (clear === true) {
-            console.clear();
-        }
+        clear ? console.clear() : undefined;
         process.on("unhandledRejection", async (rejection) => {
             switch (error) {
                 case "ignore":
                     break;
-                case "onlylog":
+                case "log":
                     logReject();
                     break;
                 case "shutdown":
@@ -35,9 +33,9 @@ class Extendedclient extends discord_js_1.Client {
             }
             function logReject() {
                 console.log("Unhandled Rejection:", rejection);
+                process.stdout.clearLine(1);
             }
         });
-        /* Commands */
         const commandPath = path_1.default.join(__dirname, "..", "Commands");
         fs_1.readdirSync(commandPath).forEach((dir) => {
             const commands = fs_1.readdirSync(`${commandPath}/${dir}`).filter((file) => file.endsWith(".ts"));
@@ -51,14 +49,16 @@ class Extendedclient extends discord_js_1.Client {
                 }
             }
         });
-        /* Events */
         const eventPath = path_1.default.join(__dirname, "..", "Events");
-        fs_1.readdirSync(eventPath).forEach(async (file) => {
-            const { event } = await Promise.resolve().then(() => tslib_1.__importStar(require(`${eventPath}/${file}`)));
-            this.events.set(event.name, event);
-            this.on(event.name, event.run.bind(null, this));
+        fs_1.readdirSync(eventPath).forEach(async (dir) => {
+            const events = fs_1.readdirSync(`${eventPath}/${dir}`).filter((file) => file.endsWith(".ts"));
+            for (const file of events) {
+                const { event } = await Promise.resolve().then(() => tslib_1.__importStar(require(`${eventPath}/${dir}/${file}`)));
+                this.events.set(event.name, event);
+                this[event.emiter || "on"](event.name, event.run.bind(null, this));
+            }
         });
     }
 }
-exports.default = Extendedclient;
+exports.default = TSClient;
 //# sourceMappingURL=index.js.map
